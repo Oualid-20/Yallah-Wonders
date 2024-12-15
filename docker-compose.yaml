@@ -1,0 +1,61 @@
+version: '3.8'
+
+services:
+  php-apache:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "8080:80"
+    volumes:
+      - ./:/var/www/html
+    depends_on:
+      - mysql
+    networks:
+      - app-network
+
+  mysql:
+    image: mysql:latest
+    environment:
+      MYSQL_ROOT_PASSWORD: rootpwd
+      MYSQL_DATABASE: msk
+      MYSQL_USER: oualid
+      MYSQL_PASSWORD: oualid
+    ports:
+      - "3306:3306"
+    networks:
+      - app-network
+    volumes:
+      - mysql-data:/var/lib/mysql
+
+  phpmyadmin:
+      image: phpmyadmin/phpmyadmin:latest
+      environment:
+        PMA_HOST: mysql
+        PMA_PORT: 3306
+        PMA_USER: oualid
+        PMA_PASSWORD: oualid
+      ports:
+        - "8081:80"
+      depends_on:
+        - mysql
+      networks:
+        - app-network
+  
+  jenkins:
+    image: jenkins/jenkins:lts
+    ports:
+      - "8082:8080"
+      - "50000:50000"
+    volumes:
+      - jenkins_home:/var/jenkins_home
+    networks:
+      - app-network
+
+volumes:
+  mysql-data:
+  jenkins_home:
+
+networks:
+  app-network:
+    driver: bridge
